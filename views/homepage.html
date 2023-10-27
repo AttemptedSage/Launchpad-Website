@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #444;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+        }
+
+        canvas {
+            background-color: white;
+        }
+
+        .color-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .color-button {
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .eraser-button {
+            width: 30px;
+            height: 30px; 
+            margin: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Drawer</h1>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="drawing-canvas"></canvas>
+    </div>
+
+    <div class="color-buttons">
+        <button data-color="black" class="color-button" style="background-color: black;"></button>
+        <button data-color="red" class="color-button" style="background-color: red;"></button>
+        <button data-color="blue" class="color-button" style="background-color: blue;"></button>
+        <button data-color="green" class="color-button" style="background-color: green;"></button>
+        <button data-color="orange" class="color-button" style="background-color: orange;"></button>
+        <button data-color="pink" class="color-button" style="background-color: pink;"></button>
+        <button data-color="purple" class="color-button" style="background-color: purple;"></button>
+        <button class="eraser-button" id="eraser-button">
+            Eraser
+        </button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("drawing-canvas");
+        const context = canvas.getContext("2d");
+        let drawing = false;
+        let drawingColor = "black";
+
+        canvas.width = window.innerWidth * 0.8;
+        canvas.height = window.innerHeight * 0.8;
+
+        canvas.addEventListener("mousedown", () => {
+            drawing = true;
+        });
+
+        canvas.addEventListener("mouseup", () => {
+            drawing = false;
+            context.beginPath();
+        });
+
+        canvas.addEventListener("mousemove", draw);
+
+        const colorButtons = document.querySelectorAll(".color-button");
+        colorButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+                drawingColor = button.getAttribute("data-color");
+            });
+        });
+
+        function erase(event) {
+            drawingColor = "white";
+            drawing = true;
+    
+            canvas.addEventListener("mousemove", customErase);
+            canvas.addEventListener("mouseup", () => {
+                drawing = false;
+                context.beginPath();
+                canvas.removeEventListener("mousemove", customErase);
+            });
+        }
+
+        function customErase(event) {
+            if (!drawing) return;
+
+            const x = event.clientX - canvas.getBoundingClientRect().left;
+            const y = event.clientY - canvas.getBoundingClientRect().top;
+            const eraserSize = 20;
+
+            context.clearRect(x - eraserSize / 2, y - eraserSize / 2, eraserSize, eraserSize);
+        }
+
+        function draw(event) {
+            if (!drawing) return;
+
+            context.globalCompositeOperation = "source-over";
+
+            context.lineWidth = 2;
+            context.lineCap = "round";
+            context.strokeStyle = drawingColor;
+
+            const x = event.clientX - canvas.getBoundingClientRect().left;
+            const y = event.clientY - canvas.getBoundingClientRect().top;
+
+            context.lineTo(x, y);
+            context.stroke();
+            context.beginPath();
+            context.moveTo(x, y);
+        }
+
+        const eraserButton = document.getElementById("eraser-button");
+        eraserButton.addEventListener("click", erase);
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth * 0.8;
+            canvas.height = window.innerHeight * 0.8;
+        }
+
+        window.addEventListener("resize", resizeCanvas);
+    </script>
+</body>
+</html>
